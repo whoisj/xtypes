@@ -36,6 +36,11 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assert.cs" />
+    <Compile Include="BaseFixture.cs" />
+    <Compile Include="SlimMutex.cs" />
+    <Compile Include="SlimReadWriteLock.cs" />
+    <Compile Include="Ensure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
