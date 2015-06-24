@@ -1,0 +1,115 @@
+* -text
+# code/text files
+*.ada diff=ada merge
+*.adml diff merge
+*.admx diff merge
+*.asp diff merge
+*.aspx diff merge
+*.bat diff merge
+*.bbd diff merge
+*.c diff=cpp merge
+*.cmd diff merge
+*.cpp diff=cpp merge
+*.cs diff=csharp merge
+*.csproj diff merge eol=crlf
+*.css diff merge
+*.cxx diff=cpp merge
+*.dbproj diff merge eol=crlf
+*.fsproj diff merge eol=crlf
+*.h diff=cpp merge
+*.hlsl diff merge
+*.hpp diff=cpp merge
+*.htm diff=html merge
+*.html diff=html merge
+*.hxx diff=cpp merge
+*.inc diff merge
+*.inf diff merge
+*.ini diff merge
+*.java diff=java merge
+*.js diff merge
+*.json diff merge
+*.jsproj diff merge eol=crlf
+*.kml diff merge
+*.lsproj diff merge eol=crlf
+*.md diff merge
+*.modelproj diff merge eol=crlf
+*.php diff=php merge
+*.pl diff=perl merge
+*.pm diff=perl merge
+*.projitems diff merge
+*.ps diff merge
+*.ps1 diff merge
+*.py diff=python merge
+*.rb diff=ruby merge
+*.reg diff merge
+*.rss diff merge
+*.sdignore diff merge eol=crlf
+*.sh diff merge eol=lf
+*.sln diff merge eol=crlf
+*.source diff merge
+*.sql diff merge
+*.sqlproj diff merge
+*.text diff merge
+*.tex diff=tex merge
+*.txt diff merge
+*.vb diff merge
+*.vbproj diff merge eol=crlf
+*.vcproj diff merge eol=crlf
+*.vcxproj diff merge eol=crlf
+*.vbs diff merge
+*.wixproj diff merge eol=crlf
+*.wwaproj diff merge eol=crlf
+*.xaml diff merge eol=crlf
+*.xhtml diff=html merge
+*.xml diff merge
+*.xsl diff merge
+*.xslt diff merge
+# git/config files
+.gitattributes diff merge eol=lf
+.gitignore diff merge eol=lf
+.gitmodules diff merge eol=lf
+# binary image files
+*.bmp binary
+*.dwf binary
+*.dwg binary
+*.dxf binary
+*.exif binary
+*.gif binary
+*.hdr binary
+*.img binary
+*.jfif binary
+*.jpg binary
+*.png binary
+*.psd binary
+*.rif binary
+*.sgi binary
+*.targa binary
+*.tga binary
+*.x3d binary
+*.xr binary
+*.xri binary
+# binary non-image files
+*.doc binary
+*.docm binary
+*.docx binary
+*.dot binary
+*.dotx binary
+*.eps binary
+*.xls binary
+*.xlm binary
+*.xlsm binary
+*.xlsx binary
+*.xlt binary
+*.xltm binary
+*.xltx binary
+*.pdf binary
+*.pict binary
+*.pot
+*.pps
+*.ppt binary
+*.pptm
+*.pptx binary
+*.ps binary
+*.pub
+*.swf binary
+*.xps binary
