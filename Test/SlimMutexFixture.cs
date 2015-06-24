@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Verify = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using Xunit;
+using Verify = Xunit.Assert;
 
 namespace XTypes.Tests
 {
     /// <summary>
     /// Summary description for SlimMutexFixture
     /// </summary>
-    [TestClass]
     public class SlimMutexFixture
     {
         const int Parallelism = 32;
 
-        [TestMethod]
+        [Fact]
         public void MutextBasicAsync()
         {
             int entered = 0;
@@ -22,20 +21,20 @@ namespace XTypes.Tests
             SlimMutex mutex = new SlimMutex();
             Action waiterSub = () =>
             {
-                Verify.IsTrue(mutex.IsEntered);
+                Verify.True(mutex.IsEntered, "The mutex does not report being entered.");
 
                 Interlocked.Increment(ref entered);
 
-                Verify.AreEqual(1, entered, $"Expected 1, found {entered}");
+                Verify.Equal(1, entered);
 
                 // simulate workload
                 Thread.Sleep(TimeSpan.FromMilliseconds(1));
 
-                Verify.AreEqual(1, entered, $"Expected 1, found {entered}");
+                Verify.Equal(1, entered);
 
                 Interlocked.Decrement(ref entered);
 
-                Verify.AreEqual(0, entered, $"Expected 0, found {entered}");
+                Verify.Equal(0, entered);
             };
             Func<Task> waiter = async () =>
             {
@@ -55,7 +54,7 @@ namespace XTypes.Tests
             Task.WaitAll(tasks);
         }
 
-        [TestMethod]
+        [Fact]
         public void MutextBasicSync()
         {
             int entered = 0;
@@ -65,20 +64,20 @@ namespace XTypes.Tests
             {
                 using (mutex.Enter())
                 {
-                    Verify.IsTrue(mutex.IsEntered);
+                    Verify.True(mutex.IsEntered, "The mutex does not report being entered.");
 
                     Interlocked.Increment(ref entered);
 
-                    Verify.AreEqual(1, entered);
+                    Verify.Equal(1, entered);
 
                     // simulate workload
                     Thread.Sleep(TimeSpan.FromMilliseconds(1));
 
-                    Verify.AreEqual(1, entered, $"Expected 1, actual {entered}");
+                    Verify.Equal(1, entered);
 
                     Interlocked.Decrement(ref entered);
 
-                    Verify.AreEqual(0, entered, $"Expected 0, actual {entered}");
+                    Verify.Equal(0, entered);
                 }
             };
 
@@ -92,7 +91,7 @@ namespace XTypes.Tests
             Task.WaitAll(tasks);
         }
 
-        [TestMethod]
+        [Fact]
         public void MutextTimedAsync()
         {
             SlimMutex mutex = new SlimMutex();
@@ -155,12 +154,12 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(success, false);
-            Verify.AreEqual(firstEntered, true);
-            Verify.AreEqual(secondEntered, true);
+            Verify.False(success, "Mutex was double entered.");
+            Verify.True(firstEntered, "Mutex wasn't entered the first time.");
+            Verify.True(secondEntered, "Mutext wasn't entered the second time");
         }
 
-        [TestMethod]
+        [Fact]
         public void MutextTimedSync()
         {
             SlimMutex mutex = new SlimMutex();
@@ -211,9 +210,9 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(success, false);
-            Verify.AreEqual(firstEntered, true);
-            Verify.AreEqual(secondEntered, true);
+            Verify.False(success, "Mutex was double entered.");
+            Verify.True(firstEntered, "Mutex wasn't entered the first time.");
+            Verify.True(secondEntered, "Mutext wasn't entered the second time");
         }
     }
 }

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Verify = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using Xunit;
+using Verify = Xunit.Assert;
 
 namespace XTypes.Tests
 {
     /// <summary>
     /// Summary description for SlimReaderWriterLockFixture
     /// </summary>
-    [TestClass]
     public class SlimReaderWriterLockFixture
     {
         const int Parallelism = 32;
 
-        [TestMethod]
+        [Fact]
         public void ReaderWriterLockBasicAsync()
         {
             int maxRead = 0;
@@ -24,7 +23,7 @@ namespace XTypes.Tests
             SlimReadWriteLock rwl = new SlimReadWriteLock();
             Action readSub = () =>
             {
-                Verify.IsFalse(rwl.EnteredWriters > 0, "Read and write locks held concurrently");
+                Verify.False(rwl.EnteredWriters > 0, "Read and write locks held concurrently");
 
                 lock (@lock)
                 {
@@ -44,7 +43,7 @@ namespace XTypes.Tests
                 // simulate long running read operation
                 Thread.Sleep(TimeSpan.FromMilliseconds(1));
 
-                Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
+                Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
             };
             Func<Task> reader = async () =>
             {
@@ -55,7 +54,7 @@ namespace XTypes.Tests
             };
             Action writeSub = () =>
             {
-                Verify.IsFalse(rwl.EnteredReaders > 0, "Read and write locks held concurrently");
+                Verify.False(rwl.EnteredReaders > 0, "Read and write locks held concurrently");
 
                 lock (@lock)
                 {
@@ -75,8 +74,8 @@ namespace XTypes.Tests
                 // simulate long running write operation
                 Thread.Sleep(TimeSpan.FromMilliseconds(10));
 
-                Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
-                Verify.IsTrue(rwl.WaitingReaders > 0, "Zero waiting readers when greater than zero expected");
+                Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
+                Verify.True(rwl.WaitingReaders > 0, "Zero waiting readers when greater than zero expected");
             };
             Func<Task> writer = async () =>
             {
@@ -95,13 +94,13 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(maxWrite, 1, "More than a single writer was active at a time");
-            Verify.IsTrue(maxRead > 1, "Parallel reads were not encoutnered");
-            Verify.AreEqual(0, rwl.EnteredReaders, "Entered readers remain");
-            Verify.AreEqual(0, rwl.EnteredWriters, "Entered writers remain");
+            Verify.Equal(1, maxWrite);
+            Verify.True(maxRead > 1, "Parallel reads were not encoutnered");
+            Verify.Equal(0, rwl.EnteredReaders);
+            Verify.Equal(0, rwl.EnteredWriters);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReaderWriterLockBasicSync()
         {
             int maxRead = 0;
@@ -113,7 +112,7 @@ namespace XTypes.Tests
             {
                 using (rwl.EnterReadLock())
                 {
-                    Verify.IsFalse(rwl.EnteredWriters > 0, "Read and write locks held concurrently");
+                    Verify.False(rwl.EnteredWriters > 0, "Read and write locks held concurrently");
 
                     lock (@lock)
                     {
@@ -133,14 +132,14 @@ namespace XTypes.Tests
                     // simulate long running read operation
                     Thread.Sleep(TimeSpan.FromMilliseconds(1));
 
-                    Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
+                    Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
                 }
             };
             Action writer = () =>
             {
                 using (rwl.EnterWriteLock())
                 {
-                    Verify.IsFalse(rwl.EnteredReaders > 0, "Read and write locks held concurrently");
+                    Xunit.Assert.False(rwl.EnteredReaders > 0, "Read and write locks held concurrently");
 
                     lock (@lock)
                     {
@@ -160,8 +159,8 @@ namespace XTypes.Tests
                     // simulate long running write operation
                     Thread.Sleep(TimeSpan.FromMilliseconds(10));
 
-                    Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
-                    Verify.IsTrue(rwl.WaitingReaders > 0, "Zero waiting readers when greater than zero expected");
+                    Xunit.Assert.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered, "Read and write locks held concurrently");
+                    Xunit.Assert.True(rwl.WaitingReaders > 0, "Zero waiting readers when greater than zero expected");
                 }
             };
 
@@ -174,19 +173,19 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(maxWrite, 1, "More than a single writer was active at a time");
-            Verify.IsTrue(maxRead > 1, "Parallel reads were not encoutnered");
-            Verify.AreEqual(0, rwl.EnteredReaders, "Entered readers remain");
-            Verify.AreEqual(0, rwl.EnteredWriters, "Entered writers remain");
+            Verify.Equal(1, maxWrite);
+            Verify.True(maxRead > 1, "Parallel reads were not encoutnered");
+            Verify.Equal(0, rwl.EnteredReaders);
+            Verify.Equal(0, rwl.EnteredWriters);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReaderWriterLockExcptionalAsync()
         {
             SlimReadWriteLock rwl = new SlimReadWriteLock();
             Action readerSub = () =>
             {
-                Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
+                Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
 
                 // simulate long running read operation
                 Thread.Sleep(TimeSpan.FromMilliseconds(1));
@@ -209,7 +208,7 @@ namespace XTypes.Tests
             };
             Action writerSub = () =>
             {
-                Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
+                Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
 
                 // simulate long runngin write operation
                 Thread.Sleep(TimeSpan.FromMilliseconds(10));
@@ -240,11 +239,11 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(0, rwl.EnteredReaders, "Entered readers remain");
-            Verify.AreEqual(0, rwl.EnteredWriters, "Entered writers remain");
+            Verify.Equal(0, rwl.EnteredReaders);
+            Verify.Equal(0, rwl.EnteredWriters);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReaderWriterLockExcptionalSync()
         {
             SlimReadWriteLock rwl = new SlimReadWriteLock();
@@ -254,7 +253,7 @@ namespace XTypes.Tests
                 {
                     using (rwl.EnterReadLock())
                     {
-                        Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
+                        Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
 
                         throw new Exception();
                     }
@@ -270,7 +269,7 @@ namespace XTypes.Tests
                 {
                     using (rwl.EnterWriteLock())
                     {
-                        Verify.IsFalse(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
+                        Verify.False(rwl.IsReadLockEntered && rwl.IsWriteLockEntered);
 
                         throw new Exception();
                     }
@@ -290,8 +289,8 @@ namespace XTypes.Tests
 
             Task.WaitAll(tasks);
 
-            Verify.AreEqual(0, rwl.EnteredReaders, "Entered readers remain");
-            Verify.AreEqual(0, rwl.EnteredWriters, "Entered writers remain"); ;
+            Verify.Equal(0, rwl.EnteredReaders);
+            Verify.Equal(0, rwl.EnteredWriters); ;
         }
     }
 }

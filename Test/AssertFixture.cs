@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Verify = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using Xunit;
+using Verify = Xunit.Assert;
 
 namespace XTypes.Tests
 {
     /// <summary>
     /// Summary description for AssertFixture
     /// </summary>
-    [TestClass]
     public class AssertFixture : ReflectionFixture
     {
-        [TestMethod]
+        [Fact]
         public void IsMirrorOfEnsure()
         {
-            TypeCompareCallback callback = (Type testedType, Type controlType, MethodInfo missingMethod) =>
-            {
-                Verify.Fail($"'{missingMethod.Name}' exists in '{controlType.Name}' but not in '{testedType.Name}'");
-            };
+            TypesAreEqual(typeof(Ensure), typeof(Assert));
+        }
 
-            Verify.IsTrue(TypesAreEqual(typeof(Ensure), typeof(Assert), callback), $"{nameof(Assert)} is not a proper missor of {nameof(Ensure)}");
+        [Theory]
+        [InlineData(true, true, false)]
+        [InlineData(0, 0, 1)]
+        [InlineData(0U, 0U, 1U)]
+        [InlineData(0L, 0L, 1L)]
+        [InlineData(0UL, 0UL, 1UL)]
+        [InlineData((byte)0, (byte)0, (byte)1)]
+        [InlineData(0.0, 0.0, 1.0)]
+        [InlineData(0.0f, 0.0f, 1.0f)]
+        [InlineData("0", "0", "1")]
+        [InlineData(0, 0, null)]
+        public void AreEquals<T>(T control, T @true, T @false)
+        {
+            Assert.AreEqual(control, @true);
+            Verify.Throws<Assert.Assertion>(() => { Assert.AreEqual(control, @false); });
         }
     }
 }

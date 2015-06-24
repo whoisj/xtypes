@@ -156,9 +156,14 @@ namespace XTypes
                 }
                 else
                 {
-                    throw new Exception("Internal assertion failed.");
+                    throw new Assertion("Internal assertion failed.");
                 }
             }
+        }
+
+        public class Assertion : Exception
+        {
+            public Assertion(string message) : base(message) { }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Verify = Xunit.Assert;
 
 namespace XTypes.Tests
 {
@@ -50,23 +51,17 @@ namespace XTypes.Tests
                 && parameter1.IsOptional == parameter2.IsOptional;
         }
 
-        protected bool TypesAreEqual(Type testedType, Type controlType, TypeCompareCallback failureCallback)
+        protected void TypesAreEqual(Type testedType, Type controlType)
         {
             var testedMethods = GetMethodsFromType(testedType);
             var controlMethods = GetMethodsFromType(controlType);
 
             foreach (var testedMethod in testedMethods)
             {
-                if (!controlMethods.Any((MethodInfo controlMethod) => { return MethodsAreEqual(controlMethod, testedMethod); }))
-                {
-                    failureCallback(testedType, controlType, testedMethod);
-                    return false;
-                }
+                Verify.True(controlMethods.Any((MethodInfo controlMethod) => { return MethodsAreEqual(controlMethod, testedMethod); }),
+                            $"'{testedMethod.Name}' exists in '{controlType.Name}' but not in '{testedType.Name}'");
             }
-
-            return true;
         }
 
-        protected delegate void TypeCompareCallback(Type testedType, Type controlType, MethodInfo missingMethod);
     }
 }
