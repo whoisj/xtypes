@@ -7,11 +7,14 @@
     /// <para>All year, month, day, hour, minute, and second values assume Gregorian calendar for values.</para>
     /// </summary>
     /// <remarks>All values of Timestamp are in UTC and stored to the nearest millisecond (10^-3 seconds)</remarks>
-    internal struct Timestamp : 
-        System.IComparable,                                 
-        System.IComparable<Timestamp>, 
-        System.IEquatable<Timestamp>, 
-        System.IEquatable<System.DateTime>
+    internal struct Timestamp :
+        System.IComparable,
+        System.IComparable<Timestamp>,
+        System.IComparable<System.DateTime>,
+        System.IComparable<System.DateTimeOffset>,
+        System.IEquatable<Timestamp>,
+        System.IEquatable<System.DateTime>,
+        System.IEquatable<System.DateTimeOffset>
     {
         private const int MinimumYear = -250000000;
         private const int MaximumYear = 249999999;
@@ -68,7 +71,7 @@
         {
             if (milliseconds < MinValue.TotalMilliseconds || milliseconds > MaxValue.TotalMilliseconds)
                 throw new System.ArgumentOutOfRangeException("milliseconds", $"The milliseconds parameter is restricted to [{MinValue.TotalMilliseconds}, {MaxValue.TotalMilliseconds}]");
-            
+
             // record the actuall milliseconds passed in as the base value
             this.TotalMilliseconds = milliseconds;
             // get the absolute number of milliseconds because the math works this way
@@ -164,7 +167,7 @@
         /// expressed as a value between 0 and 59.</param>
         /// <param name="millisecond">The millisecond component of the date represented by this 
         /// instance, expressed as a value between 0 and 999.</param>
-        public Timestamp(int year, int month, int day, int hour = 0, int minute = 0, int second = 0, int millisecond = 0)
+        public Timestamp(int year, int month = 1, int day = 1, int hour = 0, int minute = 0, int second = 0, int millisecond = 0)
             : this()
         {
             if (year < MinimumYear || year > MaximumYear)
@@ -174,14 +177,14 @@
             if (day < 1 || day > DaysPerMonth[month - 1])
                 throw new System.ArgumentOutOfRangeException("day", $"The day parameter is restricted to [1, {DaysPerMonth[month]}]");
             if (hour < 0 || hour > 23)
-                throw new System.ArgumentOutOfRangeException("hour", "The hour parameter is restricted to [0, 23)");
+                throw new System.ArgumentOutOfRangeException("hour", "The hour parameter is restricted to [0, 23]");
             if (minute < 0 || minute > 59)
-                throw new System.ArgumentOutOfRangeException("minute", "The minute parameter is restricted to [0, 60)");
+                throw new System.ArgumentOutOfRangeException("minute", "The minute parameter is restricted to [0, 59]");
             if (second < 0 || second > 59)
-                throw new System.ArgumentOutOfRangeException("second", "The second parameter is restricted to [0, 60)");
+                throw new System.ArgumentOutOfRangeException("second", "The second parameter is restricted to [0, 59]");
             if (millisecond < 0 || millisecond > 999)
-                throw new System.ArgumentOutOfRangeException("millisecond", "The millisecond parameter is restricted to [0, 1000)");
-            
+                throw new System.ArgumentOutOfRangeException("millisecond", "The millisecond parameter is restricted to [0, 999]");
+
             int absyear = System.Math.Abs(year) - 1;
             month -= 1;
             day -= 1;
@@ -189,7 +192,7 @@
             milliseconds += (absyear / YearsPerLeapYear) * MillisecondsPerDay;
             milliseconds -= (absyear / YearsPer1CLeapYear) * MillisecondsPerDay;
             milliseconds += (absyear / YearsPer4CLeapYear) * MillisecondsPerDay;
-            for (int i = 0; i < month - 1; i++)
+            for (int i = 0; i < month; i++)
             {
                 milliseconds += DaysPerMonth[i] * MillisecondsPerDay;
                 // if we're in March, add an extra day if it is a leap year
@@ -202,6 +205,7 @@
             milliseconds += hour * MillisecondsPerHour;
             milliseconds += minute * MillisecondsPerMinute;
             milliseconds += second * MillisecondsPerSecond;
+            milliseconds += millisecond;
 
             _year = absyear;
             _month = month;
@@ -216,7 +220,7 @@
         /// <summary>
         /// Creates a <see cref="Timestamp"/> from a S<see cref="System.DateTime"/>.
         /// </summary>
-        /// <param name="datetime">The System.DateTime to be converted</param>
+        /// <param name="datetime">The <see cref="System.DateTime"/> to be converted.</param>
         public Timestamp(System.DateTime datetime)
             : this(datetime, EraType.CE)
         { }
@@ -227,11 +231,23 @@
         /// <param name="datetime">The <see cref="System.DateTime"/> to be converted.</param>
         /// <param name="era">Sets the era as <see cref="EraType.CE"/> or <see cref="EraType.BCE"/>.</param>
         public Timestamp(System.DateTime datetime, EraType era)
-            : this(datetime.Ticks / TicksPerMillisecond * (era == EraType.CE ? 1 : -1))
+            : this((datetime.Ticks / TicksPerMillisecond) * (era == EraType.CE ? 1 : -1))
         { }
-
-        public Timestamp(Timestamp timestamp)
-            : this(timestamp.Ticks / TicksPerMillisecond)
+        /// <summary>
+        /// Creates a <see cref="Timestamp"/> from a S<see cref="System.DateTimeOffset"/>.
+        /// </summary>
+        /// <param name="datetime">The <see cref="System.DateTimeOffset"/> to be converted.</param>
+        public Timestamp(System.DateTimeOffset datetime)
+            : this(datetime, EraType.CE)
+        { }
+        /// <summary>
+        /// Creates a <see cref="Timestamp"/> from a <see cref="System.DateTimeOffset"/> with date 
+        /// before 00-01-01 possible
+        /// </summary>
+        /// <param name="datetime">The <see cref="System.DateTimeOffset"/> to be converted.</param>
+        /// <param name="era">Sets the era as <see cref="EraType.CE"/> or <see cref="EraType.BCE"/>.</param>
+        public Timestamp(System.DateTimeOffset datetime, EraType era)
+            : this((datetime.Ticks / TicksPerMillisecond) * (era == EraType.BCE ? -1 : 1))
         { }
 
         /// <summary>
@@ -367,7 +383,7 @@
         /// <returns></returns>
         public bool IsLeapYear(int year)
         {
-            return year % YearsPerLeapYear == 0 
+            return year % YearsPerLeapYear == 0
                 && (year % YearsPer1CLeapYear != 0 || year % YearsPer4CLeapYear == 0);
         }
         /// <summary>
@@ -396,7 +412,7 @@
         /// <returns>A UTC formatted string that represents the current value.</returns>
         public override string ToString()
         {
-            return $"{Year:##########00}-{Month:00}-{Day:00} {Era} {Hour:00}:{Minute:00}:{Second:00}Z";
+            return $"{Year:##########00}-{Month:00}-{Day:00} {Era} {Hour:00}:{Minute:00}:{Second:00}.{Millisecond:0000}Z";
         }
         /// <summary>
         /// Compares the current instance with another object of the same type and returns an 
@@ -416,21 +432,55 @@
                 throw new System.ArgumentNullException("obj");
             if (!(obj is Timestamp))
                 throw new System.ArgumentException("The type of obj is not Timestamp", "obj");
-            
+
             return this.TotalMilliseconds.CompareTo(((Timestamp)obj).TotalMilliseconds);
         }
         /// <summary>
         /// Compares the current value with another value of the same type.
         /// </summary>
-        /// <param name="that">A value to compare with this value.</param>
+        /// <param name="timestamp">A value to compare with this value.</param>
         /// <returns>A value that indicates the relative order of the values being compared. The 
         /// return value has the following possible meanings: A value Less than zero indicates that 
         /// this object is less than object is was compared to. A value of zero indicates that the 
         /// value of this object is equal to object is was compared to. A value greater than zero 
         /// indicates that the value of this object is greater than the value is was compared to.</returns>
-        int System.IComparable<Timestamp>.CompareTo(Timestamp that)
+        int System.IComparable<Timestamp>.CompareTo(Timestamp timestamp)
         {
-            return this.TotalMilliseconds.CompareTo(that.TotalMilliseconds);
+            return this.TotalMilliseconds.CompareTo(timestamp.TotalMilliseconds);
+        }
+        /// <summary>
+        /// Compares the current value with another value of a <see cref="System.DateTime"/>.
+        /// </summary>
+        /// <param name="datetime">A value to compare with this value</param>
+        /// <returns>A value that indicates the relative order of the values being compared. The 
+        /// return value has the following possible meanings: A value Less than zero indicates that 
+        /// this object is less than object is was compared to. A value of zero indicates that the 
+        /// value of this object is equal to object is was compared to. A value greater than zero 
+        /// indicates that the value of this object is greater than the value is was compared to.</returns>
+        int System.IComparable<System.DateTime>.CompareTo(System.DateTime datetime)
+        {
+            if (this.Era == EraType.BCE)
+                return -1;
+
+            long milliseconds = datetime.Ticks / TicksPerMillisecond;
+            return this.TotalMilliseconds.CompareTo(milliseconds);
+        }
+        /// <summary>
+        /// Compares the current value with another value of a <see cref="System.DateTimeOffset"/>.
+        /// </summary>
+        /// <param name="datetime">A value to compare with this value</param>
+        /// <returns>A value that indicates the relative order of the values being compared. The 
+        /// return value has the following possible meanings: A value Less than zero indicates that 
+        /// this object is less than object is was compared to. A value of zero indicates that the 
+        /// value of this object is equal to object is was compared to. A value greater than zero 
+        /// indicates that the value of this object is greater than the value is was compared to.</returns>
+        int System.IComparable<System.DateTimeOffset>.CompareTo(System.DateTimeOffset datetime)
+        {
+            if (this.Era == EraType.BCE)
+                return -1;
+
+            long milliseconds = datetime.Ticks / TicksPerMillisecond;
+            return this.TotalMilliseconds.CompareTo(milliseconds);
         }
         /// <summary>
         /// Indicates whether the current value is equal to another value of the same type.
@@ -442,11 +492,20 @@
             return this == timestamp;
         }
         /// <summary>
-        /// Indicates whether the current value is equal to another value of a <see cref="System.DateTime"/>.
+        /// Indicates whether the current value is equal to the value of a <see cref="System.DateTime"/>.
         /// </summary>
-        /// <param name="datetime">A DateTime value to compare with this value.</param>
+        /// <param name="datetime">A <see cref="System.DateTime"/> value to compare with this value.</param>
         /// <returns>true if the current value is equal to the value parameter; otherwise, false.</returns>
         bool System.IEquatable<System.DateTime>.Equals(System.DateTime datetime)
+        {
+            return this == datetime;
+        }
+        /// <summary>
+        /// Indicates whether the current value is equal to the value of a <see cref="System.DateTimeOffset"/>.
+        /// </summary>
+        /// <param name="datetime">A <see cref="System.DateTimeOffset"/> value to compare with this value.</param>
+        /// <returns>true if the current value is equal to the value parameter; otherwise, false.</returns>
+        bool System.IEquatable<System.DateTimeOffset>.Equals(System.DateTimeOffset datetime)
         {
             return this == datetime;
         }
@@ -567,6 +626,38 @@
         }
         /// <summary>
         /// Determines whether an instance of <see cref="Timestamp"/> is equivolent to an instance 
+        /// of <see cref="System.DateTimeOffset"/> (millisecond granularity).
+        /// </summary>
+        /// <param name="datetime">The first value to compare.</param>
+        /// <param name="timestamp">The second value to compare.</param>
+        /// <returns>true if a and b represent the same date and time; otherwise, false.</returns>
+        public static bool operator ==(Timestamp timestamp, System.DateTimeOffset datetime)
+        {
+            // need to compare universal time vs timestamp, assume unknown is local (dangerous but datetime is stupid)
+            if (timestamp.Era == EraType.BCE)
+                return false;
+
+            long milliseconds = datetime.Ticks / TicksPerMillisecond;
+            // round up the value to make Timestamp compliant with DateTime
+            if (timestamp.TotalMilliseconds - milliseconds >= TicksPerMillisecond / 2)
+            {
+                milliseconds += 1;
+            }
+            return timestamp.TotalMilliseconds == milliseconds;
+        }
+        /// <summary>
+        /// Determines whether an instance of <see cref="Timestamp"/> is equivolent to an instance 
+        /// of <see cref="System.DateTimeOffset"/> (millisecond granularity).
+        /// </summary>
+        /// <param name="datetime">The first value to compare.</param>
+        /// <param name="timestamp">The second value to compare.</param>
+        /// <returns>true if a and b represent the same date and time; otherwise, false.</returns>
+        public static bool operator ==(System.DateTimeOffset datetime, Timestamp timestamp)
+        {
+            return timestamp == datetime;
+        }
+        /// <summary>
+        /// Determines whether an instance of <see cref="Timestamp"/> is equivolent to an instance 
         /// of <see cref="System.DateTime"/> (millisecond granularity).
         /// </summary>
         /// <param name="timestamp">The first value to compare.</param>
@@ -584,6 +675,28 @@
         /// <param name="timestamp">The second value to compare.</param>
         /// <returns>true if a and b do not represent the same date and time; otherwise, false.</returns>
         public static bool operator !=(System.DateTime datetime, Timestamp timestamp)
+        {
+            return !(datetime == timestamp);
+        }
+        /// <summary>
+        /// Determines whether an instance of <see cref="Timestamp"/> is equivolent to an instance 
+        /// of <see cref="System.DateTimeOffset"/> (millisecond granularity).
+        /// </summary>
+        /// <param name="timestamp">The first value to compare.</param>
+        /// <param name="datetime">The second value to compare.</param>
+        /// <returns>true if a and b do not represent the same date and time; otherwise, false.</returns>
+        public static bool operator !=(Timestamp timestamp, System.DateTimeOffset datetime)
+        {
+            return !(timestamp == datetime);
+        }
+        /// <summary>
+        /// Determines whether an instance of <see cref="Timestamp"/> is equivolent to an instance 
+        /// of <see cref="System.DateTimeOffset"/> (millisecond granularity).
+        /// </summary>
+        /// <param name="datetime">The first value to compare.</param>
+        /// <param name="timestamp">The second value to compare.</param>
+        /// <returns>true if a and b do not represent the same date and time; otherwise, false.</returns>
+        public static bool operator !=(System.DateTimeOffset datetime, Timestamp timestamp)
         {
             return !(datetime == timestamp);
         }
@@ -640,10 +753,10 @@
         /// Casts a <see cref="Timestamp"/> to a <see cref="System.DateTimeOffset"/>. Data lost can 
         /// occur as a <see cref="Timestamp"/> ignores values less than a millisecond.
         /// </summary>
-        /// <param name="datetimeOffset">The value to cast.</param>
-        public static explicit operator Timestamp(System.DateTimeOffset datetimeOffset)
+        /// <param name="datetime">The value to cast.</param>
+        public static explicit operator Timestamp(System.DateTimeOffset datetime)
         {
-            return new Timestamp(datetimeOffset.UtcTicks / TicksPerMillisecond);
+            return new Timestamp(datetime.UtcTicks / TicksPerMillisecond);
         }
     }
 }
