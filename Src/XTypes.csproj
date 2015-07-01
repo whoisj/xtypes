@@ -37,12 +37,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assert.cs" />
-    <Compile Include="BaseFixture.cs" />
-    <Compile Include="SlimMutex.cs" />
-    <Compile Include="SlimReadWriteLock.cs" />
+    <Compile Include="Threading\SlimMutex.cs" />
+    <Compile Include="Threading\SlimReadWriteLock.cs" />
     <Compile Include="Ensure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SlimSemaphore.cs" />
+    <Compile Include="Threading\SlimSemaphore.cs" />
+    <Compile Include="FileSystem\Directory.cs" />
+    <Compile Include="FileSystem\File.cs" />
+    <Compile Include="Timestamp.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -15,7 +15,7 @@ namespace XTypes
             NotNull(value, name);
 
             if (!value.Equals(expected))
-                throw new ArgumentException($"Invalid argument encountered. Expected '{expected}', found '{value}'", name);
+                throw new ArgumentException($"Invalid argument encountered. Expected '{expected}', found '{value}'.", name);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,13 +29,13 @@ namespace XTypes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnumDefined<T>(int value, string name)
+        public static void EnumDefined<T>(T value, string name)
         {
             Assert.NotNull(name);
             NotNull(value, name);
 
             if (!(typeof(T).IsEnum && Enum.IsDefined(typeof(T), value)))
-                throw new InvalidEnumArgumentException(name, value, typeof(T));
+                throw new ArgumentException("Invalid argument encountered.", name, new InvalidEnumArgumentException($"'{value}' is not a member of '{typeof(T)}'."));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,7 +57,7 @@ namespace XTypes
             NotNull(value, name);
 
             if (value.CompareTo(lesser) <= 0)
-                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected greater than {lesser}, found {value}.");
+                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected greater than '{lesser}', found '{value}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -69,7 +69,7 @@ namespace XTypes
             NotNull(value, name);
 
             if (value.CompareTo(lesser) < 0)
-                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected greater than or equal to {lesser}, found {value}.");
+                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected greater than or equal to '{lesser}', found '{value}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,7 +104,7 @@ namespace XTypes
             NotNull(value, name);
 
             if (value.CompareTo(greater) >= 0)
-                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected less than {greater}, found {value}.");
+                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected less than '{greater}', found '{value}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -116,7 +116,7 @@ namespace XTypes
             NotNull(value, name);
 
             if (value.CompareTo(greater) > 0)
-                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected less then or equal to {greater}, found {value}.");
+                throw new ArgumentOutOfRangeException(name, $"Invalid argument encountered. Expected less then or equal to '{greater}', found '{value}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

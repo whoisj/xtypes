@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.IO;
 using Xunit;
 using Verify = Xunit.Assert;
 
@@ -26,11 +25,42 @@ namespace XTypes.Tests
         [InlineData(0.0, 0.0, 1.0)]
         [InlineData(0.0f, 0.0f, 1.0f)]
         [InlineData("0", "0", "1")]
-        [InlineData(0, 0, null)]
         public void AreEquals<T>(T control, T @true, T @false)
         {
             Assert.AreEqual(control, @true);
-            Verify.Throws<Assert.Assertion>(() => { Assert.AreEqual(control, @false); });
+            Verify.Throws<AssertionException>(() => { Assert.AreEqual(control, @false); });
+        }
+
+        [Fact]
+        public void DirectoryExists()
+        {
+            DirectoryInfo positiveTest = new DirectoryInfo("assert-foo");
+            DirectoryInfo negativeTest = new DirectoryInfo("assert-bar");
+
+            if (!positiveTest.Exists)
+            {
+                positiveTest.Create();
+            }
+            if (negativeTest.Exists)
+            {
+                negativeTest.Delete(true);
+            }
+
+            Assert.DirectoryExists(positiveTest.FullName);
+            Verify.Throws<AssertionException>(() => { Assert.DirectoryExists(negativeTest.FullName); });
+
+            positiveTest.Delete();
+        }
+
+        [Fact]
+        public void EnumDefined()
+        {
+            Assert.EnumDefined(TestEnum.Value1);
+            Assert.EnumDefined(TestEnum.Value2);
+            Assert.EnumDefined((TestEnum)0);
+            Assert.EnumDefined((TestEnum)1);
+
+            Verify.Throws<AssertionException>(() => { Assert.EnumDefined((TestEnum)2); });
         }
     }
 }

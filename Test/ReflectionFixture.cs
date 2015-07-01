@@ -5,7 +5,7 @@ using Verify = Xunit.Assert;
 
 namespace XTypes.Tests
 {
-    public class ReflectionFixture:BaseFixture
+    public class ReflectionFixture : BaseFixture
     {
         protected MethodInfo[] GetMethodsFromType(Type type)
         {
