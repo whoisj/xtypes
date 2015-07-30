@@ -37,6 +37,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assert.cs" />
+    <Compile Include="Options\BareOption.cs" />
+    <Compile Include="Options\ExclusiveSet.cs" />
+    <Compile Include="Options\NamedOption.cs" />
+    <Compile Include="Options\Option.cs" />
+    <Compile Include="Options\OptionalSet.cs" />
+    <Compile Include="Options\OptionSet.cs" />
+    <Compile Include="Options\ValueOption.cs" />
     <Compile Include="Threading\SlimMutex.cs" />
     <Compile Include="Threading\SlimReadWriteLock.cs" />
     <Compile Include="Ensure.cs" />
