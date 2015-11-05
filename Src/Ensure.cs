@@ -140,6 +140,15 @@ namespace XTypes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void NotNull(void* value, string name)
+        {
+            Assert.NotNull(name);
+
+            if (value == null)
+                throw new ArgumentNullException(name, "Unexpected null value encountered.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ValidArrayIndex(int value, Array array, string name)
         {
             Assert.NotNull(name);
