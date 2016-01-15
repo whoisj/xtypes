@@ -1,4 +1,4 @@
-* -text	filter=cat
+* filter=cat -text
 # code/text files
 *.ada diff=ada merge
 *.adml diff merge
