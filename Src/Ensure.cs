@@ -28,6 +28,7 @@ namespace XTypes
                 throw new ArgumentException("Invalid argument encountered.", name, new DirectoryNotFoundException($"'{path}' does not exist or is inaccessible."));
         }
 
+        //
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnumDefined<T>(T value, string name)
         {
